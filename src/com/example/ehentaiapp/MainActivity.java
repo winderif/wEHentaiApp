@@ -3,7 +3,6 @@ package com.example.ehentaiapp;
 import java.io.File;
 
 import com.example.ehentaiapp.R;
-import com.example.ehentaiapp.fragment.AbsListViewBaseFragment;
 import com.example.ehentaiapp.fragment.FavoriteParentFragment;
 import com.example.ehentaiapp.fragment.MainFragment;
 import com.example.ehentaiapp.fragment.FavoriteFragment.OnFavoriteChangeListener;
@@ -11,9 +10,7 @@ import com.example.ehentaiapp.fragment.FavoriteFragment;
 import com.example.ehentaiapp.fragment.HistoryFragment;
 import com.example.ehentaiapp.fragment.HistoryFragment.OnHistoryChangeListener;
 import com.example.ehentaiapp.fragment.SearchFragment;
-import com.example.ehentaiapp.fragment.SettingsFragment;
 import com.example.ehentaiapp.fragment.SubscribeFragment;
-import com.example.ehentaiapp.fragment.SubscribeParentFragment;
 import com.example.ehentaiapp.database.Item;
 import com.example.ehentaiapp.database.ItemDAO;
 import com.nostra13.universalimageloader.cache.disc.impl.UnlimitedDiskCache;
@@ -22,17 +19,13 @@ import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 
 public class MainActivity extends FragmentActivity 
@@ -76,17 +69,10 @@ public class MainActivity extends FragmentActivity
 		if(tagRequest) {
 			Bundle args = new Bundle();
 			args.putString("tag", tag);
-//			Fragment mFrag = getSupportFragmentManager().findFragmentById(R.id.fr_subscribe_parent);
-			/*
-			if(mFrag == null) {
-				mFrag = new SubscribeParentFragment();
-			}
-			*/
+
 			Fragment mFrag = new SubscribeFragment();
-//			Fragment mFrag = new SubscribeParentFragment();
 			mFrag.setArguments(args);
 			getSupportFragmentManager().beginTransaction()
-//				.replace(android.R.id.content, mFrag, SubscribeParentFragment.class.getSimpleName())
 				.replace(android.R.id.content, mFrag, SubscribeFragment.TAG)
 				.commit();
 			
@@ -129,21 +115,7 @@ public class MainActivity extends FragmentActivity
 			showToast(data.getStringExtra("tag"));
 			tag = data.getStringExtra("tag");
 			tagRequest = true;
-			/*
-			Bundle args = new Bundle();
-			args.putString("tag", data.getStringExtra("tag"));
-			Fragment mFrag = getSupportFragmentManager().findFragmentById(R.id.fr_subscribe_parent);
-			if(mFrag == null) {
-				mFrag = new SubscribeParentFragment();
-			}
-			mFrag.setArguments(args);
-			getSupportFragmentManager().beginTransaction()
-				.replace(android.R.id.content, mFrag, SubscribeParentFragment.class.getSimpleName())
-//				.commit();
-				.commitAllowingStateLoss();
-			
-			setTitle("Subscribe");
-			*/
+
 		default:
 			break;
 		}
@@ -191,15 +163,7 @@ public class MainActivity extends FragmentActivity
 				getSupportFragmentManager().beginTransaction()
 					.replace(android.R.id.content, mFrag, SearchFragment.TAG)
 					.commit();
-				/*
-				mFrag = getSupportFragmentManager().findFragmentById(R.id.fr_search_grid);
-				if(mFrag == null) {
-					mFrag = new SearchFragment();
-				}
-				getSupportFragmentManager().beginTransaction()
-					.replace(android.R.id.content, mFrag, SearchFragment.class.getSimpleName())
-					.commit();
-				*/
+
 				setTitle("Search");
 				return true;
 			case R.id.action_subscribe:
@@ -211,17 +175,7 @@ public class MainActivity extends FragmentActivity
 				setTitle("Subscribe");
 				return true;
 			case R.id.action_settings:
-				/*
-				mFrag = getSupportFragmentManager().findFragmentById(R.id.fr_settings_list);
-				if(mFrag == null) {
-					mFrag = new SettingsFragment();
-				}
-				getSupportFragmentManager().beginTransaction()
-					.replace(android.R.id.content, mFrag, SettingsFragment.class.getSimpleName())
-					.commit();
-				
-				setTitle("Settings");
-				*/
+	
 				Intent mIntent = new Intent();
 				mIntent.setClass(this, MainPreferenceActivity.class);
 				startActivityForResult(mIntent, Constants.RequestCode.SETTINGS);
