@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="CacheDirlistArray">
+		<item>default storage</item>
+		<item>sd card</item>
+	</string-array>
+	<string-array name="CacheDirlistValues">
+    	<item>0</item>
+    	<item>1</item>
+	</string-array>
+</resources>

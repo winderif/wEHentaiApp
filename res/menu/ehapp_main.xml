@@ -1,0 +1,40 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.example.ehentaiapp.EHAppMain" >
+
+    <item 
+        android:id="@+id/action_search"
+        android:title="@string/action_search"
+        android:icon="@drawable/ic_action_search"
+        android:showAsAction="ifRoom"                android:actionViewClass="android.widget.SearchView" />
+    <item
+        android:id="@+id/action_prev"        
+        android:icon="@drawable/ic_action_prev"
+        android:showAsAction="ifRoom|collapseActionView"
+        android:title="@string/action_prev"/>
+	<item
+        android:id="@+id/action_next"        
+        android:icon="@drawable/ic_action_next"
+        android:showAsAction="ifRoom"
+        android:title="@string/action_next"/>
+	<item
+        android:id="@+id/action_update"  
+        android:icon="@drawable/ic_action_update"  
+        android:showAsAction="ifRoom"    
+        android:title="@string/action_update"/>
+	<item
+        android:id="@+id/action_filter"      
+        android:icon="@drawable/ic_action_settings"  
+        android:showAsAction="ifRoom"
+        android:title="@string/action_filter"/>
+	<item
+        android:id="@+id/action_favorite"      
+        android:icon="@drawable/button_normal"  
+        android:showAsAction="ifRoom"
+        android:title="@string/action_favorite"/>	
+    <item
+        android:id="@+id/action_settings"      
+        android:icon="@drawable/ic_action_settings"  
+        android:showAsAction="ifRoom"
+        android:title="@string/action_settings"/>	
+</menu>

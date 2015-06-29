@@ -1,0 +1,30 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.example.ehentaiapp.EHAppMain" >
+
+    <item
+        android:id="@+id/action_favorite"      
+        android:icon="@drawable/button_normal"  
+        android:showAsAction="ifRoom"
+        android:title="@string/action_favorite"/>
+	<item
+        android:id="@+id/action_main"      
+        android:icon="@drawable/ic_main_normal"  
+        android:showAsAction="ifRoom"
+        android:title="@string/action_filter"/>
+	<item
+        android:id="@+id/action_search"      
+        android:icon="@drawable/ic_fr_search_normal"  
+        android:showAsAction="ifRoom"
+        android:title="@string/action_search"/>
+	<item
+        android:id="@+id/action_subscribe"      
+        android:icon="@drawable/ic_fr_search_normal"  
+        android:showAsAction="ifRoom"
+        android:title="@string/action_subscribe"/>		
+    <item
+        android:id="@+id/action_settings"      
+        android:icon="@drawable/ic_action_settings"  
+        android:showAsAction="never"
+        android:title="@string/action_settings"/>	
+</menu>

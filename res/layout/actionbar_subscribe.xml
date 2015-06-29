@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+    
+    <TextView
+        android:id="@+id/actionbar_tag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"   
+        android:layout_centerVertical="true"
+        android:background="@drawable/tag_shape_normal"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp" />
+
+    <android.widget.SearchView
+        android:id="@+id/subscribe_search_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@+id/actionbar_filter_button"
+        android:iconifiedByDefault="false"
+        android:queryHint="@string/search_hint"
+        android:imeOptions="actionSearch" />
+    
+    <ImageButton
+        android:id="@+id/actionbar_filter_button"
+        android:layout_width="48dip"
+        android:layout_height="48dip"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"        
+        android:background="@android:color/transparent"
+        android:contentDescription="test"
+        android:onClick="onFilterClick"
+        android:src="@drawable/ic_action_settings" />
+    
+</RelativeLayout>

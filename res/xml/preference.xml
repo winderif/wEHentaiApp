@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <PreferenceCategory android:title="ImageLoader" >
+        <ListPreference
+            android:defaultValue="0"
+            android:entries="@array/CacheDirlistArray"
+            android:entryValues="@array/CacheDirlistValues"
+            android:key="@string/pref_cachedir"
+            android:title="Cache dir" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="About" >
+        <PreferenceScreen 
+            android:title="Version"
+            android:summary="0.4.0"/>
+        <PreferenceScreen 
+            android:title="Author"
+            android:summary="winderif"/>
+        <PreferenceScreen 
+            android:title="Comming Soon..."/>
+    </PreferenceCategory>
+
+</PreferenceScreen>
