@@ -67,7 +67,7 @@ public class HistoryFragment extends AbsListViewBaseFragment {
 		super.onCreate(savedInstanceState);
 		
         mItemDAO = new ItemDAO(getActivity().getApplicationContext());
-		
+        mItemDAO.open();
 //		new ParserTask().execute(Integer.toString(idxOfPage), searchQuery);
 	}
 

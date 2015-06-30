@@ -10,6 +10,8 @@ import android.content.ContentValues;
 import android.content.Context;
 
 public class ItemDAO {
+	private Context context;
+	
 	public static final String TABLE_NAME = "item";
 	
 	public static final String KEY_ID = "_id";
@@ -37,7 +39,10 @@ public class ItemDAO {
     private SQLiteDatabase db;
     
 	public ItemDAO(Context context) {
-		// TODO Auto-generated constructor stub
+		this.context = context;
+	}
+	
+	public void open() {
 		db = EhentaiDBHelper.getDatabase(context);
 	}
 	

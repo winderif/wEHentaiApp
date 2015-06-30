@@ -69,6 +69,7 @@ public class FavoriteFragment extends AbsListViewBaseFragment {
 		Log.i("LIFE", "favo create "+getId());
 		
         mItemDAO = new ItemDAO(getActivity().getApplicationContext());
+        mItemDAO.open();
 		
 //		new ParserTask().execute(Integer.toString(idxOfPage), searchQuery);
 	}
