@@ -31,11 +31,14 @@ public class EhentaiDBHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
     	db.execSQL(ItemDAO.CREATE_TABLE);
+    	db.execSQL(TagDAO.CREATE_TABLE);
     }
  
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     	db.execSQL("DROP TABLE IF EXISTS " + ItemDAO.TABLE_NAME);
+    	db.execSQL("DROP TABLE IF EXISTS " + TagDAO.TABLE_NAME);
+    	
         onCreate(db);
     }
 }
