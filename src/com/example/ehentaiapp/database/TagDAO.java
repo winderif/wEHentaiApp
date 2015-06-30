@@ -1,9 +1,12 @@
 package com.example.ehentaiapp.database;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 public class TagDAO {
@@ -87,4 +90,18 @@ public class TagDAO {
 		
         return db.delete(TABLE_NAME, where , null) > 0;
     }
+	
+	public List<String> getAllTag() {
+		List<String> result = new ArrayList<String>();
+		
+        Cursor cursor = db.query(
+                TABLE_NAME, new String[]{TAG_COLUMN}, null, null, null, null, null, null);
+ 
+        while (cursor.moveToNext()) {
+            result.add(cursor.getString(0));
+        }
+ 
+        cursor.close();
+        return result;
+	}
 }
