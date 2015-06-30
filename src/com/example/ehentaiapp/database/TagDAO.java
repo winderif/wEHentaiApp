@@ -12,7 +12,7 @@ import android.database.sqlite.SQLiteDatabase;
 public class TagDAO {
 	private Context context;
 	
-	public static final String TABLE_NAME = "item";
+	public static final String TABLE_NAME = "tags";
 	
 	public static final String KEY_ID = "_id";
 	
