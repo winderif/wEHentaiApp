@@ -11,6 +11,7 @@ import com.example.ehentaiapp.fragment.HistoryFragment;
 import com.example.ehentaiapp.fragment.HistoryFragment.OnHistoryChangeListener;
 import com.example.ehentaiapp.fragment.SearchFragment;
 import com.example.ehentaiapp.fragment.SubscribeFragment;
+import com.example.ehentaiapp.fragment.TagSubscribeFragment;
 import com.example.ehentaiapp.database.Item;
 import com.example.ehentaiapp.database.ItemDAO;
 import com.nostra13.universalimageloader.cache.disc.impl.UnlimitedDiskCache;
@@ -167,9 +168,11 @@ public class MainActivity extends FragmentActivity
 				setTitle("Search");
 				return true;
 			case R.id.action_subscribe:
-				mFrag = new SubscribeFragment();
+//				mFrag = new SubscribeFragment();
+				mFrag = new TagSubscribeFragment();
 				getSupportFragmentManager().beginTransaction()
-					.replace(android.R.id.content, mFrag, SubscribeFragment.TAG)
+//					.replace(android.R.id.content, mFrag, SubscribeFragment.TAG)
+					.replace(android.R.id.content, mFrag, TagSubscribeFragment.TAG)
 					.commit();
 
 				setTitle("Subscribe");
