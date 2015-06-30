@@ -93,7 +93,7 @@ public class FavoriteFragment extends AbsListViewBaseFragment {
 			}
 		});
 		
-		new ParserTask().execute(Integer.toString(idxOfPage), searchQuery);
+		new ParserTask().execute();
 		
 		return rootView;
 	}
@@ -110,7 +110,7 @@ public class FavoriteFragment extends AbsListViewBaseFragment {
 		urlOfComic.clear();
 	}
 	
-	private class ParserTask extends AsyncTask<String, Void, Void> {
+	private class ParserTask extends AsyncTask<Void, Void, Void> {
 		@Override
 		protected void onPreExecute() {
 			clearData();
@@ -119,7 +119,7 @@ public class FavoriteFragment extends AbsListViewBaseFragment {
 		}
 		
 		@Override
-		protected Void doInBackground(String... query) {
+		protected Void doInBackground(Void... query) {
 			// TODO Auto-generated method stub
 			// get favorite database
 			String where = mItemDAO.IS_FAVORITE_COLUMN + "=" + 1;
@@ -138,6 +138,7 @@ public class FavoriteFragment extends AbsListViewBaseFragment {
 		@Override
 		protected void onPostExecute(Void result) {
 			dismissProgressDialog();
+			
 			if(numOfFavoriteComics == 0) {
 				mComicAdapter.notifyDataSetChanged();
 				showToast("No Found");
@@ -161,6 +162,6 @@ public class FavoriteFragment extends AbsListViewBaseFragment {
 	}
 	
 	public void updateFavorite() {
-		new ParserTask().execute(Integer.toString(idxOfPage), searchQuery);
+		new ParserTask().execute();
 	}
 }	
