@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import com.example.ehentaiapp.database.Item;
 import com.example.ehentaiapp.database.ItemDAO;
+import com.example.ehentaiapp.database.TagDAO;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -54,6 +55,7 @@ public class HomePageActivity extends Activity {
 	private Button mTagButton;
 	
 	private ItemDAO mItemDAO;
+	private TagDAO mTagDAO;
 	private Item mItem;
 	private ArrayList<String> mTags;
 	
@@ -70,6 +72,8 @@ public class HomePageActivity extends Activity {
 
 		mTags = new ArrayList<String>();
 		mItemDAO = new ItemDAO(getApplicationContext());
+		mTagDAO = new TagDAO(getApplicationContext());
+		
 		setExist(mItemDAO.isExist(urlOfComic));
 		if(isExist()) {			
 			mItem = mItemDAO.get(urlOfComic);

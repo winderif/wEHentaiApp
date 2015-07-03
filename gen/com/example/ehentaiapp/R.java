@@ -49,25 +49,25 @@ public final class R {
         public static final int tag_shape_pressed=0x7f020014;
     }
     public static final class id {
-        public static final int action_favorite=0x7f0a002c;
-        public static final int action_filter=0x7f0a002b;
-        public static final int action_main=0x7f0a002d;
-        public static final int action_next=0x7f0a0029;
-        public static final int action_prev=0x7f0a0028;
-        public static final int action_search=0x7f0a0027;
-        public static final int action_settings=0x7f0a0026;
-        public static final int action_subscribe=0x7f0a002e;
-        public static final int action_update=0x7f0a002a;
+        public static final int action_favorite=0x7f0a002e;
+        public static final int action_filter=0x7f0a002d;
+        public static final int action_main=0x7f0a002f;
+        public static final int action_next=0x7f0a002b;
+        public static final int action_prev=0x7f0a002a;
+        public static final int action_search=0x7f0a0029;
+        public static final int action_settings=0x7f0a0028;
+        public static final int action_subscribe=0x7f0a0030;
+        public static final int action_update=0x7f0a002c;
         public static final int actionbar_favorite_button=0x7f0a0001;
         public static final int actionbar_filter_button=0x7f0a0003;
         public static final int actionbar_tag=0x7f0a0004;
         public static final int comic_gridview=0x7f0a0006;
-        public static final int comic_image=0x7f0a0020;
-        public static final int comic_loading=0x7f0a0025;
+        public static final int comic_image=0x7f0a0021;
+        public static final int comic_loading=0x7f0a0027;
         public static final int comic_scroll_layout=0x7f0a0008;
         public static final int comic_scrollview=0x7f0a0007;
         public static final int container=0x7f0a0000;
-        public static final int error=0x7f0a0022;
+        public static final int error=0x7f0a0024;
         public static final int favorite_text=0x7f0a0015;
         public static final int fr_favorite=0x7f0a0013;
         public static final int fr_favorite_parent=0x7f0a0014;
@@ -77,6 +77,7 @@ public final class R {
         public static final int fr_settings_list=0x7f0a0019;
         public static final int fr_subscribe_grid=0x7f0a001b;
         public static final int fr_subscribe_parent=0x7f0a001c;
+        public static final int fr_tagsubscribe_list=0x7f0a001e;
         public static final int gridview=0x7f0a0009;
         public static final int home_but_1=0x7f0a0012;
         public static final int home_img=0x7f0a000c;
@@ -87,14 +88,15 @@ public final class R {
         public static final int home_text_2=0x7f0a000e;
         public static final int home_text_3=0x7f0a000f;
         public static final int home_text_4=0x7f0a0010;
-        public static final int image=0x7f0a001e;
-        public static final int retry=0x7f0a0023;
-        public static final int scroll_image=0x7f0a0024;
+        public static final int image=0x7f0a001f;
+        public static final int item_tag=0x7f0a0022;
+        public static final int retry=0x7f0a0025;
+        public static final int scroll_image=0x7f0a0026;
         public static final int search_view=0x7f0a0002;
         public static final int subscribe_search_view=0x7f0a0005;
         public static final int subscribe_text=0x7f0a001d;
-        public static final int tag_button=0x7f0a0021;
-        public static final int text=0x7f0a001f;
+        public static final int tag_button=0x7f0a0023;
+        public static final int text=0x7f0a0020;
         public static final int text_filter=0x7f0a001a;
     }
     public static final class layout {
@@ -115,13 +117,15 @@ public final class R {
         public static final int fr_settings_list=0x7f03000e;
         public static final int fr_subscribe_grid=0x7f03000f;
         public static final int fr_subscribe_parent=0x7f030010;
-        public static final int grid_item=0x7f030011;
-        public static final int grid_item_comic=0x7f030012;
-        public static final int item_grid_image=0x7f030013;
-        public static final int item_tab=0x7f030014;
-        public static final int item_tag=0x7f030015;
-        public static final int partial_error=0x7f030016;
-        public static final int scroll_item=0x7f030017;
+        public static final int fr_tagsubscribe_list=0x7f030011;
+        public static final int grid_item=0x7f030012;
+        public static final int grid_item_comic=0x7f030013;
+        public static final int item_grid_image=0x7f030014;
+        public static final int item_list_tag=0x7f030015;
+        public static final int item_tab=0x7f030016;
+        public static final int item_tag=0x7f030017;
+        public static final int partial_error=0x7f030018;
+        public static final int scroll_item=0x7f030019;
     }
     public static final class menu {
         public static final int comin_page=0x7f090000;
