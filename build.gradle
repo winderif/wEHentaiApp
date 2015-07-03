@@ -1,6 +1,6 @@
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:1.2.3'
@@ -8,8 +8,13 @@ buildscript {
 }
 apply plugin: 'com.android.application'
 
+repositories {
+    mavenCentral()
+}
+
 dependencies {
-    compile fileTree(dir: 'libs', include: '*.jar')
+    compile 'com.wefika:flowlayout:0.4.0'
+    compile fileTree(include: '*.jar', dir: 'libs')
 }
 
 android {
