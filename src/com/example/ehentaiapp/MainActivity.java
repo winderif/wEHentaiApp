@@ -47,6 +47,7 @@ public class MainActivity extends FragmentActivity
 		Log.i("LIFE", "main act create");
 		
 		mItemDAO = new ItemDAO(getApplicationContext());
+		mItemDAO.open();
 		
 		initCacheDir();
 

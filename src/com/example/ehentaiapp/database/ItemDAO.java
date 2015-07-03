@@ -215,6 +215,7 @@ public class ItemDAO {
 		String where = URL_OF_COMIC_COLUMN + "=\"" + url + "\"";
 		Cursor result = db.query(
                 TABLE_NAME, null, where, null, null, null, null, null);
+		
 		boolean exist = (result.getCount() > 0);
 		result.close();
 		return exist;

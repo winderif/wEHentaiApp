@@ -72,7 +72,9 @@ public class HomePageActivity extends Activity {
 
 		mTags = new ArrayList<String>();
 		mItemDAO = new ItemDAO(getApplicationContext());
+		mItemDAO.open();
 		mTagDAO = new TagDAO(getApplicationContext());
+		mTagDAO.open();
 		
 		setExist(mItemDAO.isExist(urlOfComic));
 		if(isExist()) {			
