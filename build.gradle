@@ -13,7 +13,6 @@ repositories {
 }
 
 dependencies {
-    compile 'com.wefika:flowlayout:0.4.0'
     compile fileTree(include: '*.jar', dir: 'libs')
 }
 
