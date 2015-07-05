@@ -1,59 +1,68 @@
 package com.example.ehentaiapp;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
-import com.example.ehentaiapp.database.Item;
-import com.example.ehentaiapp.database.ItemDAO;
-import com.example.ehentaiapp.database.TagDAO;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
-
-import android.support.v4.app.NavUtils;
-import android.app.ActionBar;
 import android.app.Activity;
-import android.os.AsyncTask;
-import android.os.Bundle;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
+import android.os.AsyncTask;
+import android.os.Bundle;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.ImageView;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.ehentaiapp.database.Item;
+import com.example.ehentaiapp.database.ItemDAO;
+import com.example.ehentaiapp.database.TagDAO;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.wefika.flowlayout.FlowLayout;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
+import java.io.IOException;
+import java.util.ArrayList;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class HomePageActivity extends Activity {
 	private DisplayImageOptions options;
 	private ImageLoader imageLoader = ImageLoader.getInstance();
 	
-//	private LinearLayout mTagLayout;
-	private FlowLayout mTagLayout;
-	private TextView titleOfComicTextView;
-	private TextView numOfComicPageTextView;
-	private TextView datetimeTextView;
-	private TextView categoryTextView;
-	private ImageView mImageView;
+	@Bind(R.id.home_tags)
+	FlowLayout mTagLayout;
+
+	@Bind(R.id.home_text_1)
+	TextView titleTextView;
+
+	@Bind(R.id.home_text_2)
+	TextView sizeTextView;
+
+	@Bind(R.id.home_text_3)
+	TextView dateTextView;
+
+	@Bind(R.id.home_text_4)
+	TextView categoryTextView;
+
+	@Bind(R.id.home_img)
+	ImageView mImageView;
+
+	@Bind(R.id.home_but_1)
+	Button mButton;
+
 	private ImageButton mImageButton;
-	private Button mButton;
-	private Button mTagButton;
-	
+
 	private ItemDAO mItemDAO;
 	private TagDAO mTagDAO;
 	private Item mItem;
@@ -66,6 +75,7 @@ public class HomePageActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_home_page);
+		ButterKnife.bind(this);
 		
 		Intent mIntent = super.getIntent();
 		urlOfComic = mIntent.getStringExtra("comic_url");
@@ -92,25 +102,12 @@ public class HomePageActivity extends Activity {
 	private void initView() {
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		
-		findView();
-		
-		setActionBarFavoriteButton();		
+		setActionBarFavoriteButton();
 		/** 判斷是否為favorite，ture要設selected
 		 * 
 		 */
 	}
-	
-	private void findView() {
-		mTagLayout = (FlowLayout)findViewById(R.id.home_tags);
-		titleOfComicTextView = (TextView)findViewById(R.id.home_text_1);
-		numOfComicPageTextView = (TextView)findViewById(R.id.home_text_2);
-		datetimeTextView = (TextView)findViewById(R.id.home_text_3);
-		categoryTextView = (TextView)findViewById(R.id.home_text_4);
-		mImageView = (ImageView)findViewById(R.id.home_img);
-		mButton = (Button)findViewById(R.id.home_but_1);
-		mTagButton = (Button)findViewById(R.id.tag_button);
-	}
-	
+
 	private void setActionBarFavoriteButton() {
 		getActionBar().setDisplayShowCustomEnabled(true);
 		getActionBar().setDisplayShowHomeEnabled(true);
@@ -121,6 +118,7 @@ public class HomePageActivity extends Activity {
 		mImageButton.setSelected(mItem.isFavorite());
 	}
 
+	@OnClick(R.id.home_but_1)
 	public void onReadClick(View v) {
 		Intent mIntent = new Intent();				
 		mIntent.setClass(HomePageActivity.this, ScrollActivity.class);
@@ -220,9 +218,9 @@ public class HomePageActivity extends Activity {
 	}
 	
 	private void setComicInfo() {
-		titleOfComicTextView.setText(mItem.getTitle());
-		numOfComicPageTextView.setText("Length:\t" + mItem.getNumOfPages() + " Pages");
-		datetimeTextView.setText("Date:\t" + mItem.getDatetime());
+		titleTextView.setText(mItem.getTitle());
+		sizeTextView.setText("Length:\t" + mItem.getNumOfPages() + " Pages");
+		dateTextView.setText("Date:\t" + mItem.getDatetime());
 		categoryTextView.setText("Category:\t" + mItem.getCategory());
 	}
 	
