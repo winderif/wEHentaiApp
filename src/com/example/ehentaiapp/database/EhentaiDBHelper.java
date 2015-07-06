@@ -11,7 +11,7 @@ public class EhentaiDBHelper extends SQLiteOpenHelper {
     private static EhentaiDBHelper instance = null;
 
     public static final String DATABASE_NAME = "ehentai_data.db";
-    public static final int VERSION = 1;
+    public static final int VERSION = 4;
     private static SQLiteDatabase mDatabase;
 
     public EhentaiDBHelper(Context context) {
