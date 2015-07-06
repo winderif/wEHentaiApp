@@ -1,18 +1,7 @@
 package com.example.ehentaiapp.fragment;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
 import android.app.ActionBar;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -24,23 +13,30 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
-import android.widget.SearchView;
 import android.widget.ImageButton;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.AbsListView.OnScrollListener;
+import android.widget.SearchView;
 import android.widget.SearchView.OnQueryTextListener;
+import android.widget.TextView;
 
 import com.example.ehentaiapp.ComicAdapter;
 import com.example.ehentaiapp.Constants;
+import com.example.ehentaiapp.Filter;
 import com.example.ehentaiapp.HomePageActivity;
 import com.example.ehentaiapp.R;
-import com.example.ehentaiapp.Filter;
 import com.example.ehentaiapp.util.DataLoader;
 import com.example.ehentaiapp.util.NetworkHelper;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.util.ArrayList;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
 
 public class SearchFragment extends AbsListViewBaseFragment {
 	public static final String TAG = "SearchFragment";
@@ -49,11 +45,19 @@ public class SearchFragment extends AbsListViewBaseFragment {
 	private ArrayList<String> categoryOfComic;
 	private ArrayList<String> urlOfComic;
 	
-	private ComicAdapter mComicAdapter; 
-	private SearchView searchView;
-	private ImageButton mImageButton;
-	private TextView errorView;
-	private Button retryButton;
+	private ComicAdapter mComicAdapter;
+
+//	@Bind(R.id.search_view)
+	SearchView searchView;
+
+//	@Bind(R.id.actionbar_filter_button)
+	ImageButton mImageButton;
+
+	@Bind(R.id.error)
+	TextView errorView;
+
+	@Bind(R.id.retry)
+	Button retryButton;
 	
 	private NetworkHelper networkHelper;
 	private DataLoader dataLoader;
@@ -82,6 +86,8 @@ public class SearchFragment extends AbsListViewBaseFragment {
             Bundle savedInstanceState) {
 		// Inflate the layout for this fragment
 		View rootView = inflater.inflate(R.layout.fr_search_grid, container, false);
+		ButterKnife.bind(this, rootView);
+
 		listView = (GridView) rootView.findViewById(R.id.fr_search_grid);
 		
 		mComicAdapter = new ComicAdapter(getActivity(), urlOfComicCover, categoryOfComic);
@@ -99,11 +105,8 @@ public class SearchFragment extends AbsListViewBaseFragment {
 			}
 		});
 		
-		errorView = (TextView) rootView.findViewById(R.id.error);
-		retryButton = (Button) rootView.findViewById(R.id.retry);
-		
 		networkHelper = NetworkHelper.getInstance(getActivity());
-		dataLoader = DataLoader.getInstance();
+		dataLoader = DataLoader.getInstance(getActivity());
 		
 		getComicGrid();
 		
@@ -175,60 +178,7 @@ public class SearchFragment extends AbsListViewBaseFragment {
 					}
 				}
 			}
-			/*
-			try {
-				Document mDoc = Jsoup.connect(Constants.BASE_URL)
-						.data("page", query[0])
-						.data("f_doujinshi",filter.getOption(0))
-						.data("f_manga", 	filter.getOption(1))
-						.data("f_artistcg", filter.getOption(2))
-						.data("f_gamecg", 	filter.getOption(3))
-						.data("f_western", 	filter.getOption(4))
-						.data("f_non-h", 	filter.getOption(5))
-						.data("f_imageset", filter.getOption(6))
-						.data("f_cosplay", 	filter.getOption(7))
-						.data("f_asianporn",filter.getOption(8))
-						.data("f_misc", 	filter.getOption(9))
-						.data("f_search", query[1])
-						.data("f_apply", "Apply Filter").get();
-				
-				Elements table = mDoc.getElementsByClass("itg"); 
-				if(table.isEmpty()) {
-					numOfTotalPages = 0;
-				}
-				else {
-					for (Element tr : table.select("tr")) {
-						Elements td = tr.select("td");
-						if (td.size() >= 4) {
-							categoryOfComic.add(td.get(0).child(0).select("img").attr("alt"));
 
-							// comic thumbnail
-							if (td.get(2).getElementsByClass("it2").first().select("img").size() 
-									> 0) {
-								urlOfComicCover.add(td.get(2)
-										.getElementsByClass("it2").first()
-										.select("img").attr("abs:src"));
-							} else {
-								String[] token = td.get(2).text().split("~");
-								urlOfComicCover.add("http://" + token[1] + "/" + token[2]);
-							}
-							// comic url
-							urlOfComic.add(td.get(2)
-									.getElementsByClass("it5").select("a")
-									.attr("abs:href"));
-						}
-					}
-				
-					// Get number of total books.
-					Elements pageBar = mDoc.getElementsByClass("ptt");
-					Elements pageBarItem = pageBar.select("td");
-					numOfTotalPages = Integer.parseInt(pageBarItem.get(
-							pageBarItem.size() - 2).text());
-				}
-			} catch(IOException e) {
-				e.printStackTrace();
-			}	
-			*/	
 			return null;
 		}
 		
@@ -284,7 +234,8 @@ public class SearchFragment extends AbsListViewBaseFragment {
 	    getActivity().getActionBar().setCustomView(R.layout.actionbar_search);
 	    View view = getActivity().getActionBar().getCustomView();
 	    view.setVisibility(View.VISIBLE);
-	    searchView = (SearchView) view.findViewById(R.id.search_view);	    
+
+	    searchView = (SearchView) view.findViewById(R.id.search_view);
 //	    searchView.onActionViewExpanded();
 	    searchView.setOnQueryTextListener(new OnQueryTextListener() {
 	    	@Override
@@ -304,6 +255,7 @@ public class SearchFragment extends AbsListViewBaseFragment {
 	    		return false;
 	    	}
 	    });
+
 	    mImageButton = (ImageButton) view.findViewById(R.id.actionbar_filter_button);
 	    mImageButton.setOnClickListener(new OnClickListener(){
 	        @Override
@@ -311,14 +263,10 @@ public class SearchFragment extends AbsListViewBaseFragment {
 	        	initFilterDialog();
 	        }
 	    });
-		
+
 	    super.onCreateOptionsMenu(menu,inflater);
 	}
-	/*
-	public void onFilterClick(View v) {
-		initFilterDialog();
-	}
-	*/
+
 	private void initFilterDialog() {
 		AlertDialog.Builder checkDlg = new AlertDialog.Builder(getActivity());
 		checkDlg.setTitle("Search Option");

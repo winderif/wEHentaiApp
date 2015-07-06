@@ -1,23 +1,9 @@
 package com.example.ehentaiapp.fragment;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.example.ehentaiapp.Constants;
-import com.example.ehentaiapp.HomePageActivity;
-import com.example.ehentaiapp.ComicAdapter;
-import com.example.ehentaiapp.R;
-import com.example.ehentaiapp.util.DataLoader;
-import com.example.ehentaiapp.util.NetworkHelper;
-
-import android.widget.AbsListView.OnScrollListener;
+import android.app.ActionBar;
+import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -26,19 +12,26 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
-import android.widget.SearchView;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.app.ActionBar;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.os.AsyncTask;
-import android.os.Bundle;
+
+import com.example.ehentaiapp.ComicAdapter;
+import com.example.ehentaiapp.Constants;
+import com.example.ehentaiapp.HomePageActivity;
+import com.example.ehentaiapp.R;
+import com.example.ehentaiapp.util.DataLoader;
+import com.example.ehentaiapp.util.NetworkHelper;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.util.ArrayList;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
 
 public class MainFragment extends AbsListViewBaseFragment {
 	public static final String TAG = "MainFragment";
@@ -48,9 +41,13 @@ public class MainFragment extends AbsListViewBaseFragment {
 	private ArrayList<String> urlOfComic;
 	
 	private ComicAdapter mComicAdapter; 
-	private SearchView searchView;
-	private TextView errorView;
-	private Button retryButton;
+//	private SearchView searchView;
+
+	@Bind(R.id.error)
+	TextView errorView;
+
+	@Bind(R.id.retry)
+	Button retryButton;
 	
 	private NetworkHelper networkHelper;
 	private DataLoader dataLoader;
@@ -73,13 +70,15 @@ public class MainFragment extends AbsListViewBaseFragment {
 		setHasOptionsMenu(true);
 		
 		initData();
-//		new ParserTask().execute(Integer.toString(idxOfPage), searchQuery);
 	}
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
 		Log.i("LIFE", "main create view");
+
 		View rootView = inflater.inflate(R.layout.fr_main_grid, container, false);
+		ButterKnife.bind(this, rootView);
+
 		listView = (GridView) rootView.findViewById(R.id.fr_main_grid);
 		mComicAdapter = new ComicAdapter(getActivity(), urlOfComicCover, categoryOfComic);
 		
@@ -96,15 +95,10 @@ public class MainFragment extends AbsListViewBaseFragment {
 			}
 		});
 		
-		errorView = (TextView) rootView.findViewById(R.id.error);
-		retryButton = (Button) rootView.findViewById(R.id.retry);
-		
 		networkHelper = NetworkHelper.getInstance(getActivity());
-		dataLoader = DataLoader.getInstance();
+		dataLoader = DataLoader.getInstance(getActivity());
 		
 		getComicGrid();
-		
-//		new ParserTask().execute(Integer.toString(idxOfPage), searchQuery);
 		
 		return rootView;
 	}
@@ -119,6 +113,8 @@ public class MainFragment extends AbsListViewBaseFragment {
     public void onDestroy() {
 		Log.i("LIFE", "main create destroy");
         super.onDestroy();
+
+		ButterKnife.unbind(this);
     }
 	
 	@Override
@@ -197,61 +193,7 @@ public class MainFragment extends AbsListViewBaseFragment {
 					}
 				}
 			}
-			/*
-			try {
-				Document mDoc = Jsoup.connect(Constants.BASE_URL)
-						.data("page", query[0])
-						.data("f_doujinshi",searchOption.getOption(0))
-						.data("f_manga", 	searchOption.getOption(1))
-						.data("f_artistcg", searchOption.getOption(2))
-						.data("f_gamecg", 	searchOption.getOption(3))
-						.data("f_western", 	searchOption.getOption(4))
-						.data("f_non-h", 	searchOption.getOption(5))
-						.data("f_imageset", searchOption.getOption(6))
-						.data("f_cosplay", 	searchOption.getOption(7))
-						.data("f_asianporn",searchOption.getOption(8))
-						.data("f_misc", 	searchOption.getOption(9))
-						.data("f_search", query[1])
-						.data("f_apply", "Apply Filter").get();
-				
-				Elements table = mDoc.getElementsByClass("itg"); 
-				if(table.isEmpty()) {
-					numOfTotalPages = 0;
-				}
-				else {
-					for (Element tr : table.select("tr")) {
-						Elements td = tr.select("td");
-						if (td.size() >= 4) {
-							categoryOfComic.add(td.get(0).child(0).select("img").attr("alt"));
 
-							// comic thumbnail
-							if (td.get(2).getElementsByClass("it2").first().select("img").size() 
-									> 0) {
-								urlOfComicCover.add(td.get(2)
-										.getElementsByClass("it2").first()
-										.select("img").attr("abs:src"));
-							} else {
-								String[] token = td.get(2).text().split("~");
-								urlOfComicCover.add("http://" + token[1] + "/" + token[2]);
-							}
-							// comic url
-							urlOfComic.add(td.get(2)
-									.getElementsByClass("it5").select("a")
-									.attr("abs:href"));
-						}
-					}
-				
-					// Get number of total books.
-					Elements pageBar = mDoc.getElementsByClass("ptt");
-					Elements pageBarItem = pageBar.select("td");
-					numOfTotalPages = Integer.parseInt(pageBarItem.get(
-							pageBarItem.size() - 2).text());
-							
-				}
-			} catch(IOException e) {
-				e.printStackTrace();
-			}		
-			*/
 			return null;
 		}
 		
