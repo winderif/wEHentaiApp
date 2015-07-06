@@ -1,20 +1,23 @@
 package com.example.ehentaiapp;
 
-import java.util.ArrayList;
-
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.graphics.Bitmap;
 
-import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
-import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.ImageScaleType;
+import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
+
+import java.util.ArrayList;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
 
 public class ComicAdapter extends BaseAdapter {
 	private ArrayList<String> IMAGE_URLS;
@@ -45,9 +48,16 @@ public class ComicAdapter extends BaseAdapter {
 		this.CATEGORIES = categorys;
 	}
 	
-	private class ViewHolder {
-		public ImageView mImgView;
-		public TextView mTextView;
+	static class ViewHolder {
+		@Bind(R.id.image)
+		ImageView mImgView;
+
+		@Bind(R.id.text)
+		TextView mTextView;
+
+		public ViewHolder(View view) {
+			ButterKnife.bind(this, view);
+		}
 	}
 	
 	@Override
@@ -77,13 +87,13 @@ public class ComicAdapter extends BaseAdapter {
 		if(convertView == null) {
 //			view = this.mLayoutInflater.inflate(R.layout.grid_item, parent, false);
 			view = this.mLayoutInflater.inflate(R.layout.grid_item, null);
-			holder = new ViewHolder();			
-			holder.mImgView = (ImageView) view.findViewById(R.id.image);
-			holder.mTextView = (TextView) view.findViewById(R.id.text);
+
+			holder = new ViewHolder(view);
+
 			view.setTag(holder);
 		}
 		else {
-			holder = (ViewHolder)view.getTag();
+			holder = (ViewHolder) view.getTag();
 		}		
 		
 		holder.mTextView.setText(CATEGORIES.get(position));
