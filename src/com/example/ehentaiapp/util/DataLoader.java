@@ -1,30 +1,71 @@
 package com.example.ehentaiapp.util;
 
-import java.io.IOException;
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
+import android.util.Log;
 
+import com.example.ehentaiapp.Filter;
+import com.example.ehentaiapp.database.EhentaiDBHelper;
+import com.example.winderif.ehentaiapp.DaoMaster;
+import com.example.winderif.ehentaiapp.DaoSession;
+import com.example.winderif.ehentaiapp.Gallery;
+import com.example.winderif.ehentaiapp.GalleryDao;
+import com.example.winderif.ehentaiapp.GallerysToTags;
+import com.example.winderif.ehentaiapp.GallerysToTagsDao;
+import com.example.winderif.ehentaiapp.ImageDao;
+import com.example.winderif.ehentaiapp.Tag;
+import com.example.winderif.ehentaiapp.TagDao;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONArray;
 
-import com.example.ehentaiapp.Constants;
-import com.example.ehentaiapp.Filter;
-
-import android.net.Uri;
-import android.util.Log;
+import java.io.IOException;
+import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DataLoader {
 
 	public static DataLoader instance = null;
-	
-	public static DataLoader getInstance() {
+
+	private Context context;
+
+	private ImageDao imageDao;
+	private GalleryDao galleryDao;
+	private TagDao tagDao;
+	private GallerysToTagsDao gallerysToTagsDao;
+
+	private static final Pattern gUrlPattern =
+			Pattern.compile("http://g\\.e-hentai\\.org/g/(\\d+)/(\\w+)/");
+
+	public DataLoader(Context context) {
+		this.context = context;
+
+		setDatabase();
+	}
+
+	public static DataLoader getInstance(Context context) {
 		if(instance == null) {
-			instance = new DataLoader();
+			instance = new DataLoader(context.getApplicationContext());
 		}
 		return instance;
+	}
+
+	private void setDatabase() {
+//		EhentaiDBHelper helper = EhentaiDBHelper.getInstance(context);
+		SQLiteDatabase db = EhentaiDBHelper.getInstance(context).getDatabase(context);
+		DaoMaster daoMaster = new DaoMaster(db);
+		DaoSession daoSession = daoMaster.newSession();
+		imageDao = daoSession.getImageDao();
+		galleryDao = daoSession.getGalleryDao();
+		tagDao = daoSession.getTagDao();
+		gallerysToTagsDao = daoSession.getGallerysToTagsDao();
 	}
 	
 	public JSONArray getGalleryList(String base, String index, String query, boolean[] filter) {
@@ -72,10 +113,8 @@ public class DataLoader {
 		} catch(IOException e) {
 			e.printStackTrace();
 		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
@@ -110,9 +149,93 @@ public class DataLoader {
 		} catch(IOException e) {
 			e.printStackTrace();
 		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return -1;
+	}
+
+	public Gallery getGallery(String url) {
+		Gallery mGallery = new Gallery();
+
+		try {
+			Document mBookDoc = Jsoup.connect(url).get();
+
+			Matcher matcher = gUrlPattern.matcher(url);
+			JSONObject data = new JSONObject();
+
+			matcher.find();
+			data.put("id", matcher.group(1));
+			data.put("token", matcher.group(2));
+
+			Element mBookTable = mBookDoc.getElementById("gd1");
+			if(mBookTable == null) {
+				// TODO no gallery
+				return null;
+			}
+			else {
+				data.put("thumbnail", mBookTable.select("img").attr("abs:src"));
+				Element mBookTitle = mBookDoc.getElementById("gd2");
+				data.put("title", mBookTitle.child(0).text());
+				data.put("subtitle", mBookTitle.child(1).text());
+
+				Element mBookInfo = mBookDoc.getElementById("gdd");
+				data.put("date", mBookInfo.select("tr").first().child(1).text());
+				data.put("category", mBookDoc.getElementById("gdc").select("img").attr("alt"));
+				data.put("size", mBookInfo.select("tr").get(5).text().split(" ")[1]);
+
+				Element mUpload = mBookDoc.getElementById("gdn");
+				data.put("uploader", mUpload.text());
+
+				JSONArray tags = new JSONArray();
+				Element mBookTag = mBookDoc.getElementById("taglist");
+				for(Element tag : mBookTag.select("tr")) {
+					for(Element child : tag.select("td").get(1).children()) {
+						tags.put(child.text());
+					}
+				}
+
+				setGallerysToTags(data.getLong("id"), tags);
+
+				mGallery.setId(data.getLong("id"));
+				mGallery.setToken(data.getString("token"));
+				mGallery.setTitle(data.getString("title"));
+				mGallery.setSubtitle(data.getString("subtitle"));
+				mGallery.setThumbnail(data.getString("thumbnail"));
+				mGallery.setCategory(data.getString("category"));
+				mGallery.setSize(data.getInt("size"));
+				mGallery.setCreated(data.getString("date"));
+				mGallery.setCount(0);
+				mGallery.setLastRead(new Date());
+				mGallery.setStarred(false);
+				mGallery.setUploader("uploader");
+
+				galleryDao.insertInTx(mGallery);
+
+				return mGallery;
+			}
+		} catch(IOException e) {
+			e.printStackTrace();
+		} catch(JSONException ej) {
+			ej.printStackTrace();
+		}
+		return null;
+	}
+
+	private void setGallerysToTags(long galleryId, JSONArray tags) {
+		try {
+			for(int i=0; i<tags.length(); i++) {
+				Tag mTag = new Tag();
+				mTag.setName(tags.getString(i));
+				tagDao.insertInTx(mTag);
+
+				GallerysToTags relation = new GallerysToTags();
+				relation.setGalleryId(galleryId);
+				relation.setTagId(tagDao.getKey(mTag));
+
+				gallerysToTagsDao.insertInTx(relation);
+			}
+		} catch(JSONException e) {
+			e.printStackTrace();
+		}
 	}
 }
