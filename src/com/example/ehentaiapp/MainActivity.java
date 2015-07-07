@@ -1,23 +1,5 @@
 package com.example.ehentaiapp;
 
-import java.io.File;
-
-import com.example.ehentaiapp.R;
-import com.example.ehentaiapp.fragment.FavoriteParentFragment;
-import com.example.ehentaiapp.fragment.MainFragment;
-import com.example.ehentaiapp.fragment.FavoriteFragment.OnFavoriteChangeListener;
-import com.example.ehentaiapp.fragment.FavoriteFragment;
-import com.example.ehentaiapp.fragment.HistoryFragment;
-import com.example.ehentaiapp.fragment.HistoryFragment.OnHistoryChangeListener;
-import com.example.ehentaiapp.fragment.SearchFragment;
-import com.example.ehentaiapp.fragment.SubscribeFragment;
-import com.example.ehentaiapp.fragment.TagSubscribeFragment;
-import com.example.ehentaiapp.database.Item;
-import com.example.ehentaiapp.database.ItemDAO;
-import com.nostra13.universalimageloader.cache.disc.impl.UnlimitedDiskCache;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -29,10 +11,23 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.example.ehentaiapp.fragment.FavoriteFragment;
+import com.example.ehentaiapp.fragment.FavoriteFragment.OnFavoriteChangeListener;
+import com.example.ehentaiapp.fragment.FavoriteParentFragment;
+import com.example.ehentaiapp.fragment.HistoryFragment;
+import com.example.ehentaiapp.fragment.HistoryFragment.OnHistoryChangeListener;
+import com.example.ehentaiapp.fragment.MainFragment;
+import com.example.ehentaiapp.fragment.SearchFragment;
+import com.example.ehentaiapp.fragment.SubscribeFragment;
+import com.example.ehentaiapp.fragment.TagSubscribeFragment;
+import com.nostra13.universalimageloader.cache.disc.impl.UnlimitedDiskCache;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+
+import java.io.File;
+
 public class MainActivity extends FragmentActivity 
 			implements OnFavoriteChangeListener, OnHistoryChangeListener {
-	
-	private ItemDAO mItemDAO;
 	
 	private SharedPreferences prefs;
 	private int prefCacheDirValue = 0;
@@ -45,9 +40,6 @@ public class MainActivity extends FragmentActivity
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.i("LIFE", "main act create");
-		
-		mItemDAO = new ItemDAO(getApplicationContext());
-		mItemDAO.open();
 		
 		initCacheDir();
 
@@ -89,16 +81,12 @@ public class MainActivity extends FragmentActivity
 		switch (resultCode) {
 		case RESULT_OK:
 			if(requestCode != Constants.RequestCode.SETTINGS) {
-				Item mItem = (Item) data
-						.getSerializableExtra("com.example.ehentaiapp.database.Item");
 				if (requestCode == Constants.RequestCode.MAIN
 						|| requestCode == Constants.RequestCode.SEARCH) {
 					if (data.getBooleanExtra("isExist", false)) {
 						showToast("update main");
-						mItemDAO.update(mItem);
 					} else {
 						showToast("Insert main");
-						mItemDAO.insert(mItem);
 						// Update view of HistoryFragment
 						historyChange();
 					}
@@ -106,8 +94,6 @@ public class MainActivity extends FragmentActivity
 				} else if (requestCode == Constants.RequestCode.FAVORITE
 						|| requestCode == Constants.RequestCode.HISTORY) {
 					showToast("update favorite or history");
-					mItemDAO.update(mItem);
-
 					// Update view of FavoriteFragment
 					favoriteChange();
 				}
