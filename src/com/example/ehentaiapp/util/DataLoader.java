@@ -58,8 +58,8 @@ public class DataLoader {
 	}
 
 	private void setDatabase() {
-//		EhentaiDBHelper helper = EhentaiDBHelper.getInstance(context);
-		SQLiteDatabase db = EhentaiDBHelper.getInstance(context).getDatabase(context);
+		EhentaiDBHelper helper = EhentaiDBHelper.getInstance(context);
+		SQLiteDatabase db = helper.getDatabase();
 		DaoMaster daoMaster = new DaoMaster(db);
 		DaoSession daoSession = daoMaster.newSession();
 		imageDao = daoSession.getImageDao();
@@ -204,7 +204,7 @@ public class DataLoader {
 				mGallery.setCategory(data.getString("category"));
 				mGallery.setSize(data.getInt("size"));
 				mGallery.setCreated(data.getString("date"));
-				mGallery.setCount(0);
+				mGallery.setCount(1);
 				mGallery.setLastRead(new Date());
 				mGallery.setStarred(false);
 				mGallery.setUploader("uploader");
@@ -219,6 +219,11 @@ public class DataLoader {
 			ej.printStackTrace();
 		}
 		return null;
+	}
+
+	public Gallery getGallery(long id, String token) {
+		String url = "http://g.e-hentai.org/g/"+id+"/"+token+"/";
+		return getGallery(url);
 	}
 
 	private void setGallerysToTags(long galleryId, JSONArray tags) {
