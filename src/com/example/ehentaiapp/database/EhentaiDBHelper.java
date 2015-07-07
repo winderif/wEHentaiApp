@@ -30,10 +30,9 @@ public class EhentaiDBHelper extends SQLiteOpenHelper {
         return instance;
     }
 
-    public static SQLiteDatabase getDatabase(Context context) {
+    public SQLiteDatabase getDatabase() {
         if (mDatabase == null || !mDatabase.isOpen()) {
-        	mDatabase = new EhentaiDBHelper(
-        			context, DATABASE_NAME, null, VERSION).getWritableDatabase();
+            mDatabase = instance.getWritableDatabase();
         }
  
         return mDatabase;

@@ -1,13 +1,12 @@
 package com.example.ehentaiapp.database;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TagDAO {
 	private Context context;
@@ -40,7 +39,7 @@ public class TagDAO {
 	}
 	
 	public void open() {
-		db = EhentaiDBHelper.getDatabase(context);
+		db = EhentaiDBHelper.getInstance(context).getDatabase();
 	}
 	
 	public void close() {
