@@ -1,8 +1,8 @@
 package com.example.ehentaiapp.fragment;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -13,33 +13,31 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 
-import com.example.ehentaiapp.ComicAdapter;
 import com.example.ehentaiapp.Constants;
+import com.example.ehentaiapp.GalleryGridAdapter;
 import com.example.ehentaiapp.HomePageActivity;
 import com.example.ehentaiapp.R;
-import com.example.ehentaiapp.database.ItemDAO;
+import com.example.ehentaiapp.database.EhentaiDBHelper;
+import com.example.winderif.ehentaiapp.DaoMaster;
+import com.example.winderif.ehentaiapp.DaoSession;
+import com.example.winderif.ehentaiapp.Gallery;
+import com.example.winderif.ehentaiapp.GalleryDao;
 
 import java.util.ArrayList;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import de.greenrobot.dao.query.QueryBuilder;
 
 public class HistoryFragment extends AbsListViewBaseFragment {
-	private ArrayList<String> urlOfComicCover;
-	private ArrayList<String> categoryOfComic;
-	private ArrayList<String> urlOfComic;
-
 	@Bind(R.id.fr_history)
 	GridView mGridView;
 
-	private ComicAdapter mComicAdapter;
-	private ProgressDialog mDialog;
-	
-	private int numOfFavoriteComics = 0;
-	private int idxOfPage = 0;
-	private String searchQuery = "";
-	
-	private ItemDAO mItemDAO;
+	private ArrayList<Gallery> gallerys;
+
+	private GalleryGridAdapter gridAdapter;
+
+	private GalleryDao galleryDao;
 	
 	OnHistoryChangeListener listener;
 	
@@ -48,7 +46,6 @@ public class HistoryFragment extends AbsListViewBaseFragment {
 	}
 	
 	public HistoryFragment() {
-		// TODO Auto-generated constructor stub
 		initData();
 	}
 	
@@ -67,10 +64,8 @@ public class HistoryFragment extends AbsListViewBaseFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-        mItemDAO = new ItemDAO(getActivity().getApplicationContext());
-        mItemDAO.open();
-//		new ParserTask().execute(Integer.toString(idxOfPage), searchQuery);
+
+		setDatabase();
 	}
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -78,50 +73,44 @@ public class HistoryFragment extends AbsListViewBaseFragment {
 
 		View rootView = inflater.inflate(R.layout.fr_history_grid, container, false);
 		ButterKnife.bind(this, rootView);
-//		mGridView = (GridView) rootView.findViewById(R.id.fr_history);
 
-		mComicAdapter = new ComicAdapter(getActivity(), urlOfComicCover, categoryOfComic);
-		mGridView.setAdapter(mComicAdapter);
+		gridAdapter = new GalleryGridAdapter(getActivity(), gallerys);
+		mGridView.setAdapter(gridAdapter);
 		mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent,
-				View view, int position, long id) {
-				// TODO Auto-generated method stub
+									View view, int position, long id) {
+
 				Intent mIntent = new Intent();
 				mIntent.setClass(getActivity(), HomePageActivity.class);
-				mIntent.putExtra("comic_url", urlOfComic.get(position));
+				mIntent.putExtra("galleryId", gallerys.get(position).getId().toString());
+				mIntent.putExtra("galleryToken", gallerys.get(position).getToken());
 				getActivity().startActivityForResult(mIntent, Constants.RequestCode.HISTORY);
 			}
 		});
-		
-		new ParserTask().execute(Integer.toString(idxOfPage), searchQuery);
+
+		new ParserTask().execute();
 		
 		return rootView;
 	}
-	
-	@Override
-	public void onPause() {
-		super.onPause();
+
+	private void setDatabase() {
+		EhentaiDBHelper helper = EhentaiDBHelper.getInstance(getActivity().getApplicationContext());
+		SQLiteDatabase db = helper.getDatabase();
+		DaoMaster daoMaster = new DaoMaster(db);
+		DaoSession daoSession = daoMaster.newSession();
+		galleryDao = daoSession.getGalleryDao();
 	}
-	
-	@Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
-	
+
 	private void initData() {
-		urlOfComicCover = new ArrayList<String>();
-		categoryOfComic = new ArrayList<String>();
-		urlOfComic = new ArrayList<String>();
+		gallerys = new ArrayList<Gallery>();
 	}
-	
+
 	private void clearData() {
-		urlOfComicCover.clear();
-		categoryOfComic.clear();
-		urlOfComic.clear();
+		gallerys.clear();
 	}
 	
-	private class ParserTask extends AsyncTask<String, Void, Void> {
+	private class ParserTask extends AsyncTask<Void, Void, Void> {
 		@Override
 		protected void onPreExecute() {
 			clearData();
@@ -130,27 +119,29 @@ public class HistoryFragment extends AbsListViewBaseFragment {
 		}
 		
 		@Override
-		protected Void doInBackground(String... query) {
-			// TODO Auto-generated method stub
-			// get favorite database
-			String where = "";
-			categoryOfComic.addAll(mItemDAO.getAllCategory(where));
-			urlOfComic.addAll(mItemDAO.getAllUrlOfComic(where));
-			urlOfComicCover.addAll(mItemDAO.getAllUrlOfComicCover(where));
-			numOfFavoriteComics = urlOfComicCover.size();
-			
+		protected Void doInBackground(Void... arg) {
+
+			QueryBuilder query = galleryDao.queryBuilder();
+			query.where(GalleryDao.Properties.Count.gt(0));
+			query.orderDesc(GalleryDao.Properties.LastRead);
+			gallerys.addAll(query.list());
+			/**
+			 * if no history data
+			 */
+
 			return null;
 		}
 		
 		@Override
 		protected void onPostExecute(Void result) {
 			dismissProgressDialog();
-			if(numOfFavoriteComics == 0) {
-				mComicAdapter.notifyDataSetChanged();
+
+			if(gallerys.isEmpty()) {
+				gridAdapter.notifyDataSetChanged();
 				showToast("No Found");
 			}
 			else {
-				mComicAdapter.notifyDataSetChanged();
+				gridAdapter.notifyDataSetChanged();
 			}
 		}
 	}
@@ -167,6 +158,6 @@ public class HistoryFragment extends AbsListViewBaseFragment {
 	}
 
 	public void updateHistory() {
-		new ParserTask().execute(Integer.toString(idxOfPage), searchQuery);
+		new ParserTask().execute();
 	}
 }	

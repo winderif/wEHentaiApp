@@ -1,7 +1,6 @@
 package com.example.ehentaiapp.fragment;
 
 import android.app.ProgressDialog;
-import android.util.Log;
 import android.widget.AbsListView;
 import android.widget.Toast;
 

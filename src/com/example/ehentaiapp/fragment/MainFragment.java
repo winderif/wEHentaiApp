@@ -29,6 +29,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -57,6 +59,9 @@ public class MainFragment extends AbsListViewBaseFragment {
 	private int numOfTotalPages = 0;
 	private int idxOfPage = 0;
 	private String searchQuery = "";
+
+	private static final Pattern gUrlPattern =
+			Pattern.compile("http://g\\.e-hentai\\.org/g/(\\d+)/(\\w+)");
 	
 	public MainFragment() {
 		// TODO Auto-generated constructor stub
@@ -87,10 +92,13 @@ public class MainFragment extends AbsListViewBaseFragment {
 			@Override
 			public void onItemClick(AdapterView<?> parent,
 				View view, int position, long id) {
-				// TODO Auto-generated method stub
 				Intent mIntent = new Intent();
 				mIntent.setClass(getActivity(), HomePageActivity.class);
-				mIntent.putExtra("comic_url", urlOfComic.get(position));
+
+				Matcher matcher = gUrlPattern.matcher(urlOfComic.get(position));
+				matcher.find();
+				mIntent.putExtra("galleryId", matcher.group(1));
+				mIntent.putExtra("galleryToken", matcher.group(2));
 				getActivity().startActivityForResult(mIntent, Constants.RequestCode.MAIN);
 			}
 		});
@@ -98,7 +106,7 @@ public class MainFragment extends AbsListViewBaseFragment {
 		networkHelper = NetworkHelper.getInstance(getActivity());
 		dataLoader = DataLoader.getInstance(getActivity());
 		
-		getComicGrid();
+		getGalleryGrid();
 		
 		return rootView;
 	}
@@ -130,8 +138,7 @@ public class MainFragment extends AbsListViewBaseFragment {
 	    super.onCreateOptionsMenu(menu,inflater);
 	}
 	
-	private void getComicGrid() {
-		// TODO Auto-generated method stub
+	private void getGalleryGrid() {
 		if(networkHelper.isAvailable()) {
 			task = new ParserTask();
 			task.execute(Integer.toString(idxOfPage), searchQuery);
@@ -149,7 +156,7 @@ public class MainFragment extends AbsListViewBaseFragment {
 			@Override
 			public void onClick(View arg0) {
 				// TODO Auto-generated method stub
-				getComicGrid();
+				getGalleryGrid();
 			}
 		});
 	}
@@ -218,13 +225,11 @@ public class MainFragment extends AbsListViewBaseFragment {
 
 	@Override
 	protected void applyScrollListener() {
-		// TODO Auto-generated method stub
 		listView.setOnScrollListener(new OnScrollListener() {
 			int mark = 0;
 			@Override
 			public void onScroll(AbsListView view, int firstVisibleItem, 
 					int visibleItemCount, int totalItemCount) {
-				// TODO Auto-generated method stub
 				// 觸發兩次 15 10 25, 18 7 25
 				if((totalItemCount-visibleItemCount) == firstVisibleItem
 						&& totalItemCount > mark) {
@@ -238,9 +243,8 @@ public class MainFragment extends AbsListViewBaseFragment {
 
 			@Override
 			public void onScrollStateChanged(AbsListView view, int scrollState) {
-				// TODO Auto-generated method stub
+				//
 			}
-			
 		});
 	}
 }	
