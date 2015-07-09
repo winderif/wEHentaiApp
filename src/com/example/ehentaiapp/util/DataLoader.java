@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.util.Log;
 
+import com.example.ehentaiapp.Constants;
 import com.example.ehentaiapp.Filter;
 import com.example.ehentaiapp.database.EhentaiDBHelper;
 import com.example.winderif.ehentaiapp.DaoMaster;
@@ -26,9 +27,14 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import de.greenrobot.dao.query.QueryBuilder;
 
 public class DataLoader {
 
@@ -68,9 +74,10 @@ public class DataLoader {
 		gallerysToTagsDao = daoSession.getGallerysToTagsDao();
 	}
 	
-	public JSONArray getGalleryList(String base, String index, String query, boolean[] filter) {
-		String url = getGalleryListUrl(base, index, query, filter);
-		Log.i("URL", index);
+	public JSONArray getGalleryList(String url) {
+
+		Log.i("URL", url);
+
 		JSONArray dataList = new JSONArray();
 		
 		try {
@@ -107,7 +114,16 @@ public class DataLoader {
 						dataList.put(data);
 					}
 				}
-				
+
+				Elements pageBar = mDoc.getElementsByClass("ptt");
+				Elements pageBarItem = pageBar.select("td");
+				int numOfTotalPages = Integer.parseInt(pageBarItem.get(
+						pageBarItem.size() - 2).text());
+
+				JSONObject data = new JSONObject();
+				data.put("pages", numOfTotalPages);
+				dataList.put(data);
+
 				return dataList;
 			}		
 		} catch(IOException e) {
@@ -120,9 +136,11 @@ public class DataLoader {
 		return null;
 	}
 	
-	public String getGalleryListUrl(String base, String index, String query, boolean[] filter) {
+	public JSONArray getGalleryList(String base, String index, String query, boolean[] filter) {
 		Uri.Builder builder = Uri.parse(base).buildUpon();
-		
+
+		Log.i("URL", index);
+
 		builder.appendQueryParameter("page", index);
 		for(int i=0; i<Filter.KEY_OF_FILTER.length; i++) {
 			builder.appendQueryParameter(Filter.KEY_OF_FILTER[i], Filter.getOption(filter[i]));
@@ -130,28 +148,16 @@ public class DataLoader {
 		builder.appendQueryParameter(Filter.KEY_OF_SEARCH, query);
 		builder.appendQueryParameter(Filter.KEY_OF_APPLY, "Apple Filter");
 		
-		return builder.toString();
+		return getGalleryList(builder.toString());
 	}
-	
-	public int getGalleryListCount(String base, String index, String query, boolean[] filter) {
-		String url = getGalleryListUrl(base, index, query, filter);
-		
-		try {
-			Document mDoc = Jsoup.connect(url).get();
-			
-			Elements pageBar = mDoc.getElementsByClass("ptt");
-			Elements pageBarItem = pageBar.select("td");
-			int numOfTotalPages = Integer.parseInt(pageBarItem.get(
-					pageBarItem.size() - 2).text());
-			
-			return numOfTotalPages;
-			
-		} catch(IOException e) {
-			e.printStackTrace();
-		} catch (NumberFormatException e) {
-			e.printStackTrace();
-		}
-		return -1;
+
+	public JSONArray getGalleryList(String base, String index, String tagName) {
+		Uri.Builder builder = Uri.parse(base).buildUpon();
+
+		builder.appendPath(tagName);
+		builder.appendPath(index);
+
+		return getGalleryList(builder.toString());
 	}
 
 	public Gallery getGallery(String url) {
@@ -229,9 +235,24 @@ public class DataLoader {
 	private void setGallerysToTags(long galleryId, JSONArray tags) {
 		try {
 			for(int i=0; i<tags.length(); i++) {
-				Tag mTag = new Tag();
-				mTag.setName(tags.getString(i));
-				tagDao.insertInTx(mTag);
+				QueryBuilder query = tagDao.queryBuilder();
+				query.where(TagDao.Properties.Name.eq(tags.getString(i)));
+
+				Tag mTag;
+				if(query.list().isEmpty()) {
+					mTag = new Tag();
+					mTag.setName(tags.getString(i));
+					mTag.setCount(1);
+					mTag.setLastRead(new Date());
+					mTag.setLatest(new Date());
+					mTag.setLatestCount(0);
+					mTag.setSubscribed(false);
+
+					tagDao.insertInTx(mTag);
+				}
+				else {
+					mTag = (Tag) query.list().get(0);
+				}
 
 				GallerysToTags relation = new GallerysToTags();
 				relation.setGalleryId(galleryId);
@@ -242,5 +263,86 @@ public class DataLoader {
 		} catch(JSONException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void updateTagSubscribe() {
+		QueryBuilder query = tagDao.queryBuilder();
+		query.where(TagDao.Properties.Subscribed.eq(true));
+		List<Tag> tags = query.list();
+		for(Tag tag : tags) {
+			tag = updateTagSubscribe(tag);
+			tagDao.update(tag);
+		}
+	}
+
+	public Tag updateTagSubscribe(Tag oldTag) {
+		try {
+			Document mDoc = Jsoup.connect(getTagUrl(oldTag.getName())).get();
+
+			Elements table = mDoc.getElementsByClass("itg");
+
+			if(table.isEmpty()) {
+				return oldTag;
+			}
+			else {
+				int index = 0;
+				boolean first = true;
+
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+				Date oldDate;
+				int latestCount;
+
+				if(oldTag.getLatestCount() > 0) {
+					oldDate = oldTag.getLatest();
+					latestCount = oldTag.getLatestCount();
+				}
+				else {
+					oldDate = oldTag.getLastRead();
+					latestCount = 0;
+				}
+
+				for (Element tr : table.select("tr")) {
+					Elements td = tr.select("td");
+
+					if(index > 5) {
+						break;
+					}
+
+					if (td.size() >= 4) {
+						Log.i("TAGCOMPARE", oldTag.getName() +
+								" " + oldDate + " " + td.get(1).text());
+
+						index++;
+
+						Date gDate = dateFormat.parse(td.get(1).text());
+
+						if(oldDate.compareTo(gDate) < 0) {
+							latestCount++;
+
+							if(first) {
+								oldTag.setLatest(gDate);
+								first = false;
+							}
+						}
+						else {
+							break;
+						}
+					}
+				}
+
+				oldTag.setLatestCount(latestCount);
+
+				return oldTag;
+			}
+		} catch(IOException e) {
+			e.printStackTrace();
+		} catch(ParseException ep) {
+			ep.printStackTrace();
+		}
+		return null;
+	}
+
+	public String getTagUrl(String tagName) {
+		return Constants.TAG_URL + tagName;
 	}
 }
