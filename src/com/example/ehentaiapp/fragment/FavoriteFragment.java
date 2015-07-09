@@ -31,6 +31,8 @@ import butterknife.ButterKnife;
 import de.greenrobot.dao.query.QueryBuilder;
 
 public class FavoriteFragment extends AbsListViewBaseFragment {
+	public static final String TAG = "FavoriteFragment";
+
 	@Bind(R.id.fr_favorite)
 	GridView mGridView;
 

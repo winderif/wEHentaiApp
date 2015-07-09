@@ -1,12 +1,6 @@
 package com.example.ehentaiapp.fragment;
 
-import com.example.ehentaiapp.fragment.HistoryFragment;
-import com.example.ehentaiapp.fragment.FavoriteFragment.OnFavoriteChangeListener;
-
-import java.lang.reflect.Method;
-
 import android.app.ActionBar;
-import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,6 +10,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.ehentaiapp.R;
+
+import java.lang.reflect.Method;
 
 public class FavoriteParentFragment extends AbsListViewBaseFragment {
 //	FragmentTabHost mTabHost;
@@ -43,15 +39,13 @@ public class FavoriteParentFragment extends AbsListViewBaseFragment {
 					.setText("Favorite")
 					.setTabListener(new FavoriteParentFragmentTabListener<FavoriteFragment>(
 						getActivity(), 
-						FavoriteFragment.class.getSimpleName(), FavoriteFragment.class))
-						, 0);
+						FavoriteFragment.TAG, FavoriteFragment.class)), 0);
 		
 		mActionbar.addTab(mActionbar.newTab()
 					.setText("History")
 					.setTabListener(new FavoriteParentFragmentTabListener<HistoryFragment>(
 						getActivity(), 
-						HistoryFragment.class.getSimpleName(), HistoryFragment.class))
-						, 1, false);
+						HistoryFragment.TAG, HistoryFragment.class)), 1, false);
 //		}
 //		enableEmbeddedTabs();
 	}

@@ -30,6 +30,8 @@ import butterknife.ButterKnife;
 import de.greenrobot.dao.query.QueryBuilder;
 
 public class HistoryFragment extends AbsListViewBaseFragment {
+	public static final String TAG = "HistoryFragment";
+
 	@Bind(R.id.fr_history)
 	GridView mGridView;
 
