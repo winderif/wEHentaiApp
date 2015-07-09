@@ -26,9 +26,10 @@ import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 import java.io.File;
 
-public class MainActivity extends FragmentActivity 
-			implements OnFavoriteChangeListener, OnHistoryChangeListener {
-	
+public class MainActivity extends FragmentActivity
+		implements OnFavoriteChangeListener, OnHistoryChangeListener,
+					TagSubscribeFragment.OnSubscribeChangeListener {
+
 	private SharedPreferences prefs;
 	private int prefCacheDirValue = 0;
 	private String prefCacheDir;
@@ -78,6 +79,7 @@ public class MainActivity extends FragmentActivity
 	
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		Log.d("BACK", requestCode + " " + resultCode);
 		switch (resultCode) {
 		case RESULT_OK:
 			if(requestCode != Constants.RequestCode.SETTINGS) {
@@ -91,11 +93,19 @@ public class MainActivity extends FragmentActivity
 						historyChange();
 					}
 					favoriteChange();
-				} else if (requestCode == Constants.RequestCode.FAVORITE
+				}
+				else if (requestCode == Constants.RequestCode.FAVORITE
 						|| requestCode == Constants.RequestCode.HISTORY) {
 					showToast("update favorite or history");
 					// Update view of FavoriteFragment
 					favoriteChange();
+				}
+				else if(requestCode == Constants.RequestCode.SUBSCRIBE) {
+					showToast("update subscribe");
+					subscribeChange();
+				}
+				else {
+					//
 				}
 			}
 			break;
@@ -107,6 +117,7 @@ public class MainActivity extends FragmentActivity
 		default:
 			break;
 		}
+
 		super.onActivityResult(requestCode, requestCode, data);
 	}
 	
@@ -230,7 +241,7 @@ public class MainActivity extends FragmentActivity
 	@Override
 	public void favoriteChange() {
 		FavoriteFragment frag = 
-				(FavoriteFragment)getSupportFragmentManager().findFragmentByTag(FavoriteFragment.class.getSimpleName());
+				(FavoriteFragment)getSupportFragmentManager().findFragmentByTag(FavoriteFragment.TAG);
 		if(frag != null) {
 			frag.updateFavorite();	
 		}
@@ -238,11 +249,19 @@ public class MainActivity extends FragmentActivity
 
 	@Override
 	public void historyChange() {
-		// TODO Auto-generated method stub
-		HistoryFragment frag = 
-				(HistoryFragment)getSupportFragmentManager().findFragmentByTag(HistoryFragment.class.getSimpleName());
+		HistoryFragment frag =
+				(HistoryFragment)getSupportFragmentManager().findFragmentByTag(HistoryFragment.TAG);
 		if(frag != null) {
 			frag.updateHistory();
+		}
+	}
+
+	@Override
+	public void subscribeChange() {
+		TagSubscribeFragment frag =
+				(TagSubscribeFragment)getSupportFragmentManager().findFragmentByTag(TagSubscribeFragment.TAG);
+		if(frag != null) {
+			frag.updateSubscribe();
 		}
 	}
 }
