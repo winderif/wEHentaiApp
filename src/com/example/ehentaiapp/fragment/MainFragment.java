@@ -181,26 +181,22 @@ public class MainFragment extends AbsListViewBaseFragment {
 		
 		@Override
 		protected Void doInBackground(String... query) {
-			// TODO Auto-generated method stub		
+
 			JSONArray dataList = dataLoader.getGalleryList(
 					Constants.BASE_URL, query[0], query[1], filter.getOption());
-			
-			numOfTotalPages = dataLoader.getGalleryListCount(
-					Constants.BASE_URL, query[0], query[1], filter.getOption());
-			
+
 			if(dataList.length() != 0) {
-				for(int i=0; i<dataList.length(); i++) {
-					try {
+				try {
+					for(int i = 0; i < dataList.length() - 1; i++) {
 						categoryOfComic.add(dataList.getJSONObject(i).getString("category"));
 						urlOfComicCover.add(dataList.getJSONObject(i).getString("urlcover"));
 						urlOfComic.add(dataList.getJSONObject(i).getString("urlcomic"));
-					} catch (JSONException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
 					}
+					numOfTotalPages = dataList.getJSONObject(dataList.length() - 1).getInt("pages");
+				} catch (JSONException e) {
+					e.printStackTrace();
 				}
 			}
-
 			return null;
 		}
 		
@@ -237,7 +233,6 @@ public class MainFragment extends AbsListViewBaseFragment {
 					idxOfPage++;
 					task = new ParserTask();
 					task.execute(Integer.toString(idxOfPage), searchQuery);
-//					new ParserTask().execute(Integer.toString(idxOfPage), searchQuery);
 				}
 			}
 

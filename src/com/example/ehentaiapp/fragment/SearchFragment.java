@@ -34,6 +34,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -44,7 +46,7 @@ public class SearchFragment extends AbsListViewBaseFragment {
 	private ArrayList<String> urlOfComicCover;
 	private ArrayList<String> categoryOfComic;
 	private ArrayList<String> urlOfComic;
-	
+
 	private ComicAdapter mComicAdapter;
 
 //	@Bind(R.id.search_view)
@@ -67,7 +69,10 @@ public class SearchFragment extends AbsListViewBaseFragment {
 	private int numOfTotalPages = 0;
 	private int idxOfPage = 0;
 	private String searchQuery = "";
-	
+
+	private static final Pattern gUrlPattern =
+			Pattern.compile("http://g\\.e-hentai\\.org/g/(\\d+)/(\\w+)");
+
 	public SearchFragment() {
 		// TODO Auto-generated constructor stub
 		initData();
@@ -78,13 +83,11 @@ public class SearchFragment extends AbsListViewBaseFragment {
 		super.onCreate(savedInstanceState);
 		
 		setHasOptionsMenu(true);
-		
-//		new ParserTask().execute(Integer.toString(idxOfPage), searchQuery);
 	}
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-		// Inflate the layout for this fragment
+
 		View rootView = inflater.inflate(R.layout.fr_search_grid, container, false);
 		ButterKnife.bind(this, rootView);
 
@@ -97,26 +100,27 @@ public class SearchFragment extends AbsListViewBaseFragment {
 			@Override
 			public void onItemClick(AdapterView<?> parent,
 				View view, int position, long id) {
-				// TODO Auto-generated method stub
+
 				Intent mIntent = new Intent();
 				mIntent.setClass(getActivity(), HomePageActivity.class);
-				mIntent.putExtra("comic_url", urlOfComic.get(position));
+
+				Matcher matcher = gUrlPattern.matcher(urlOfComic.get(position));
+				matcher.find();
+				mIntent.putExtra("galleryId", matcher.group(1));
+				mIntent.putExtra("galleryToken", matcher.group(2));
 				getActivity().startActivityForResult(mIntent, Constants.RequestCode.SEARCH);
 			}
 		});
 		
 		networkHelper = NetworkHelper.getInstance(getActivity());
 		dataLoader = DataLoader.getInstance(getActivity());
-		
-		getComicGrid();
-		
-//		new ParserTask().execute(Integer.toString(idxOfPage), searchQuery);
+
+		getGalleryGrid();
 		
 		return rootView;
 	}
-	
-	private void getComicGrid() {
-		// TODO Auto-generated method stub
+
+	private void getGalleryGrid() {
 		if(networkHelper.isAvailable()) {
 			task = new ParserTask();
 			task.execute(Integer.toString(idxOfPage), searchQuery);
@@ -125,7 +129,7 @@ public class SearchFragment extends AbsListViewBaseFragment {
 			showError("No Internet", true);
 		}
 	}
-	
+
 	private void showError(String errMsg, boolean retry) {
 		errorView.setText(errMsg);
 		errorView.setVisibility(View.VISIBLE);
@@ -134,7 +138,7 @@ public class SearchFragment extends AbsListViewBaseFragment {
 			@Override
 			public void onClick(View arg0) {
 				// TODO Auto-generated method stub
-				getComicGrid();
+				getGalleryGrid();
 			}
 		});
 	}
@@ -159,23 +163,20 @@ public class SearchFragment extends AbsListViewBaseFragment {
 		
 		@Override
 		protected Void doInBackground(String... query) {
-			// TODO Auto-generated method stub
+
 			JSONArray dataList = dataLoader.getGalleryList(
 					Constants.BASE_URL, query[0], query[1], filter.getOption());
-			
-			numOfTotalPages = dataLoader.getGalleryListCount(
-					Constants.BASE_URL, query[0], query[1], filter.getOption());
-			
+
 			if(dataList.length() != 0) {
-				for(int i=0; i<dataList.length(); i++) {
-					try {
+				try {
+					for(int i = 0; i < dataList.length() - 1; i++) {
 						categoryOfComic.add(dataList.getJSONObject(i).getString("category"));
 						urlOfComicCover.add(dataList.getJSONObject(i).getString("urlcover"));
 						urlOfComic.add(dataList.getJSONObject(i).getString("urlcomic"));
-					} catch (JSONException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
 					}
+					numOfTotalPages = dataList.getJSONObject(dataList.length() - 1).getInt("pages");
+				} catch (JSONException e) {
+					e.printStackTrace();
 				}
 			}
 
@@ -184,6 +185,8 @@ public class SearchFragment extends AbsListViewBaseFragment {
 		
 		@Override
 		protected void onPostExecute(Void result) {
+			task = null;
+
 			dismissProgressDialog();
 			
 			if(numOfTotalPages == 0) {
@@ -198,20 +201,23 @@ public class SearchFragment extends AbsListViewBaseFragment {
 
 	@Override
 	protected void applyScrollListener() {
-		// TODO Auto-generated method stub
 		mark = 0;
 		listView.setOnScrollListener(new OnScrollListener() {
 			@Override
 			public void onScroll(AbsListView view, int firstVisibleItem, 
 					int visibleItemCount, int totalItemCount) {
-				// TODO Auto-generated method stub
+
 				if((totalItemCount-visibleItemCount) == firstVisibleItem
 						&& totalItemCount > mark) {
+
 					mark = totalItemCount;
 					idxOfPage++;
+
 					showToast(idxOfPage +"/"+ numOfTotalPages);
+
 					if(idxOfPage < numOfTotalPages) {
-						new ParserTask().execute(Integer.toString(idxOfPage), searchQuery);	
+						task = new ParserTask();
+						task.execute(Integer.toString(idxOfPage), searchQuery);
 					}
 					else {
 						showToast("End of result");
