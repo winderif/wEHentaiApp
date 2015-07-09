@@ -22,5 +22,6 @@
     <string name="search_hint">Search Keywords</string>
     <string name="text_filter">Option Filter</string>
     <string name="retry">retry</string>
+    <string name="title_activity_tag_search">TagSearchActivity</string>
 
 </resources>
