@@ -25,6 +25,7 @@ import com.example.winderif.ehentaiapp.DaoSession;
 import com.example.winderif.ehentaiapp.Gallery;
 import com.example.winderif.ehentaiapp.GalleryDao;
 import com.example.winderif.ehentaiapp.GallerysToTags;
+import com.example.winderif.ehentaiapp.TagDao;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
@@ -39,7 +40,7 @@ import butterknife.OnClick;
 public class HomePageActivity extends Activity {
 	private DisplayImageOptions options;
 	private ImageLoader imageLoader = ImageLoader.getInstance();
-	
+
 	@Bind(R.id.home_tags)
 	FlowLayout mTagLayout;
 
@@ -64,6 +65,7 @@ public class HomePageActivity extends Activity {
 	private ImageButton mImageButton;
 
 	private GalleryDao galleryDao;
+	private TagDao tagDao;
 
 	private Gallery mGallery;
 
@@ -88,15 +90,14 @@ public class HomePageActivity extends Activity {
 
 		setDatabase();
 
-		initView();
+		setActionBarCustomView();
 
 		mGallery = galleryDao.load(gId);
-		if(mGallery == null) {
+		if (mGallery == null) {
 			showToast("null");
 			task = new ParseCoverTask();
 			task.execute();
-		}
-		else {
+		} else {
 			showToast("exist");
 			showGallery();
 
@@ -104,20 +105,15 @@ public class HomePageActivity extends Activity {
 			galleryDao.update(mGallery);
 		}
 	}
-	
-	private void initView() {
-		getActionBar().setDisplayHomeAsUpEnabled(true);
-		
-		setActionBarFavoriteButton();
-	}
 
-	private void setActionBarFavoriteButton() {
+	private void setActionBarCustomView() {
+		getActionBar().setDisplayHomeAsUpEnabled(true);
 		getActionBar().setDisplayShowCustomEnabled(true);
 		getActionBar().setDisplayShowHomeEnabled(true);
 		getActionBar().setDisplayShowTitleEnabled(true);
 		getActionBar().setHomeButtonEnabled(true);
 		getActionBar().setCustomView(R.layout.actionbar_homepage);
-		mImageButton = (ImageButton)findViewById(R.id.actionbar_favorite_button);
+		mImageButton = (ImageButton) findViewById(R.id.actionbar_favorite_button);
 	}
 
 	private void setDatabase() {
@@ -126,6 +122,7 @@ public class HomePageActivity extends Activity {
 		DaoMaster daoMaster = new DaoMaster(db);
 		DaoSession daoSession = daoMaster.newSession();
 		galleryDao = daoSession.getGalleryDao();
+		tagDao = daoSession.getTagDao();
 	}
 
 	@OnClick(R.id.home_but_1)
@@ -138,25 +135,24 @@ public class HomePageActivity extends Activity {
 		startActivity(mIntent);
 		*/
 	}
-	
+
 	public void onFavoriteClick(View v) {
 		v.setSelected(!v.isSelected());
-    	if(v.isSelected()) {
-    		showToast("favorite");
+		if (v.isSelected()) {
+			showToast("favorite");
 			mGallery.setStarred(true);
-    	}
-    	else {
-    		showToast("no favorite");
+		} else {
+			showToast("no favorite");
 			mGallery.setStarred(false);
-    	}
+		}
 
 		galleryDao.update(mGallery);
 	}
-		
+
 	private void showToast(String msg) {
-    	Toast.makeText(HomePageActivity.this, msg, Toast.LENGTH_SHORT).show();
-    }
-	
+		Toast.makeText(HomePageActivity.this, msg, Toast.LENGTH_SHORT).show();
+	}
+
 	private class ParseCoverTask extends AsyncTask<Void, Void, Void> {
 		@Override
 		protected Void doInBackground(Void... param) {
@@ -164,15 +160,15 @@ public class HomePageActivity extends Activity {
 
 			return null;
 		}
-		
+
 		@Override
 		protected void onPostExecute(Void result) {
 			task = null;
 
-			if(mGallery == null) {
+			if (mGallery == null) {
 				mButton.setVisibility(View.INVISIBLE);
 				mImageButton.setVisibility(View.INVISIBLE);
-				return ;
+				return;
 			}
 
 			showGallery();
@@ -194,7 +190,7 @@ public class HomePageActivity extends Activity {
 					}
 				});
 	}
-	
+
 	private void setGalleryInfo() {
 		titleTextView.setText(mGallery.getTitle());
 		sizeTextView.setText("Length:\t" + mGallery.getSize() + " Pages");
@@ -203,14 +199,14 @@ public class HomePageActivity extends Activity {
 
 		mImageButton.setSelected(mGallery.getStarred());
 	}
-	
+
 	private void setGalleryTag() {
 		List<GallerysToTags> relationTags = mGallery.getTags();
 
 		LayoutParams layoutParams = new FlowLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
 				LayoutParams.WRAP_CONTENT);
 
-		for(GallerysToTags rTag : relationTags) {
+		for (final GallerysToTags rTag : relationTags) {
 			TextView b = new TextView(HomePageActivity.this);
 			Drawable d = getResources().getDrawable(R.drawable.tag_button);
 			b.setBackgroundDrawable(d);
@@ -218,23 +214,24 @@ public class HomePageActivity extends Activity {
 			b.setTextSize(18);
 			b.setGravity(Gravity.CENTER_HORIZONTAL);
 			b.setClickable(true);
-			b.setOnClickListener(new View.OnClickListener(){
+			b.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					showToast(((TextView)v).getText().toString());
-					/*
-					Intent result = getIntent();
-					result.putExtra("tag", ((TextView)v).getText());
-					setResult(1, result);
-					finish();
-					*/
+
+					showToast(((TextView) v).getText().toString());
+
+					Intent mIntent = getIntent();
+					mIntent.setClass(HomePageActivity.this, TagSearchActivity.class);
+					mIntent.putExtra("tagId", rTag.getTagId());
+					mIntent.putExtra("tagName", rTag.getTag().getName());
+					startActivity(mIntent);
 				}
 			});
 
 			mTagLayout.addView(b, layoutParams);
 		}
 	}
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.home_page, menu);
@@ -243,14 +240,14 @@ public class HomePageActivity extends Activity {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch(item.getItemId()) {
+		switch (item.getItemId()) {
 			case android.R.id.home:
 				Intent result = getIntent();
 				setResult(RESULT_OK, result);
-            	finish();  
+				finish();
 				return true;
 			default:
-				return super.onOptionsItemSelected(item); 
+				return super.onOptionsItemSelected(item);
 		}
 	}
 }
