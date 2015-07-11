@@ -1,10 +1,19 @@
 package com.example.ehentaiapp;
 
 import android.content.Context;
+import android.database.DataSetObserver;
 import android.util.AttributeSet;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.ListAdapter;
 import android.widget.ScrollView;
 
 public class ComicScrollView extends ScrollView {
+
+    private ListAdapter adapter;
+    private DataSetObserver dataSetObserver;
+    private LinearLayout layout;
+
 	private ScrollViewListener scrollViewListener = null;
 	private boolean isLoading = false;
 
@@ -46,6 +55,63 @@ public class ComicScrollView extends ScrollView {
         		&& isLoading) {
         	isLoading = false;
             scrollViewListener.onLoading(this);
+        }
+    }
+
+    public ListAdapter getAdapter() {
+        return adapter;
+    }
+
+    public void setAdapter(ListAdapter adapter) {
+        if(adapter == null) {
+            return ;
+        }
+
+        if(dataSetObserver == null) {
+            dataSetObserver = new AdapterObserver();
+        }
+
+        if (layout == null) {
+            layout = new LinearLayout(getContext());
+            layout.setOrientation(LinearLayout.VERTICAL);
+
+            // ScrollView only has one child
+            if(this.getChildCount() > 1) {
+                this.removeAllViews();
+            }
+
+            this.addView(layout);
+        }
+
+        if(this.adapter != null) {
+            this.adapter.unregisterDataSetObserver(dataSetObserver);
+            layout.removeAllViews();
+        }
+
+        if(adapter != null) {
+            this.adapter = adapter;
+            this.adapter.registerDataSetObserver(dataSetObserver);
+            setViewFromAdapter();
+        }
+    }
+
+    private void setViewFromAdapter() {
+        for(int i=0; i<adapter.getCount(); i++) {
+            final View view = adapter.getView(i, null, this);
+            layout.addView(view);
+        }
+    }
+
+    public class AdapterObserver extends DataSetObserver {
+        @Override
+        public void onChanged() {
+            layout.removeAllViews();
+            setViewFromAdapter();
+        }
+
+        @Override
+        public void onInvalidated() {
+            layout.removeAllViews();
         }
     }
 }
