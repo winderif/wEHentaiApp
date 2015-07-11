@@ -9,14 +9,6 @@
         android:id="@+id/comic_scrollview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"         
-        android:gravity="center">
-        <LinearLayout
-            android:id="@+id/comic_scroll_layout"
-        	android:layout_width="match_parent"
-        	android:layout_height="wrap_content"
-        	android:orientation="vertical"
-            />
-        
-    </com.example.ehentaiapp.ComicScrollView>    
+        android:gravity="center"/>
 
 </LinearLayout>
