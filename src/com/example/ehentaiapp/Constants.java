@@ -6,6 +6,8 @@ public final class Constants {
 	}
 
 	public static final String BASE_URL = "http://g.e-hentai.org/";
+	public static final String GALLERY_URL = "http://g.e-hentai.org/g/";
+	public static final String IMAGE_URL = "http://g.e-hentai.org/s/";
 	public static final String TAG_URL = "http://g.e-hentai.org/tag/";
 	
 	public static class RequestCode {
