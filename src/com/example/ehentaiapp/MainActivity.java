@@ -230,6 +230,7 @@ public class MainActivity extends FragmentActivity
 				new ImageLoaderConfiguration.Builder(this)
 				.diskCache(new UnlimitedDiskCache(new File(prefCacheDir)))
 //				.diskCacheExtraOptions(480, 320, null) // image size too small
+				.denyCacheImageMultipleSizesInMemory()
 				.build();
 		ImageLoader.getInstance().init(config);
 	}
