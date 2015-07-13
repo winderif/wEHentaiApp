@@ -14,6 +14,7 @@ import com.example.winderif.ehentaiapp.Gallery;
 import com.example.winderif.ehentaiapp.GalleryDao;
 import com.example.winderif.ehentaiapp.GallerysToTags;
 import com.example.winderif.ehentaiapp.GallerysToTagsDao;
+import com.example.winderif.ehentaiapp.Image;
 import com.example.winderif.ehentaiapp.ImageDao;
 import com.example.winderif.ehentaiapp.Tag;
 import com.example.winderif.ehentaiapp.TagDao;
@@ -29,6 +30,7 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -37,6 +39,8 @@ import java.util.regex.Pattern;
 import de.greenrobot.dao.query.QueryBuilder;
 
 public class DataLoader {
+
+	private static final String LOG_MATCHER = "MATCHER";
 
 	public static DataLoader instance = null;
 
@@ -49,6 +53,14 @@ public class DataLoader {
 
 	private static final Pattern gUrlPattern =
 			Pattern.compile("http://g\\.e-hentai\\.org/g/(\\d+)/(\\w+)/");
+
+	private static final Pattern iUrlPattern =
+			Pattern.compile("http://g\\.e-hentai\\.org/s/(\\w+)/(\\d+)-(\\d+)");
+
+	private static final Pattern imageInfo =
+			Pattern.compile("^(\\w+\\.\\w+)\\s::\\s(\\d+)\\sx\\s(\\d+)\\s::\\s.+");
+
+	private static final int NUM_PER_PAGE = 40;
 
 	public DataLoader(Context context) {
 		this.context = context;
@@ -161,6 +173,9 @@ public class DataLoader {
 	}
 
 	public Gallery getGallery(String url) {
+
+		Log.i("URL", url);
+
 		Gallery mGallery = new Gallery();
 
 		try {
@@ -169,9 +184,16 @@ public class DataLoader {
 			Matcher matcher = gUrlPattern.matcher(url);
 			JSONObject data = new JSONObject();
 
-			matcher.find();
-			data.put("id", matcher.group(1));
-			data.put("token", matcher.group(2));
+			if(matcher.find()) {
+				data.put("id", matcher.group(1));
+				data.put("token", matcher.group(2));
+			}
+			else {
+				Log.e(LOG_MATCHER, "Gallery url not match");
+
+				return null;
+			}
+
 
 			Element mBookTable = mBookDoc.getElementById("gd1");
 			if(mBookTable == null) {
@@ -227,9 +249,22 @@ public class DataLoader {
 		return null;
 	}
 
-	public Gallery getGallery(long id, String token) {
-		String url = "http://g.e-hentai.org/g/"+id+"/"+token+"/";
-		return getGallery(url);
+	public Gallery getGallery(String base, long id, String token) {
+		return getGallery(getGalleryUrl(base, id, token));
+	}
+
+	public String getGalleryUrl(String base, long id, String token) {
+		Uri.Builder builder = Uri.parse(base).buildUpon();
+
+		builder.appendPath(Long.toString(id));
+		builder.appendPath(token);
+		builder.appendPath("");
+
+		return builder.toString();
+	}
+
+	public String getGalleryUrl(Gallery gallery) {
+		return getGalleryUrl(Constants.GALLERY_URL, gallery.getId(), gallery.getToken());
 	}
 
 	private void setGallerysToTags(long galleryId, JSONArray tags) {
@@ -269,6 +304,7 @@ public class DataLoader {
 		QueryBuilder query = tagDao.queryBuilder();
 		query.where(TagDao.Properties.Subscribed.eq(true));
 		List<Tag> tags = query.list();
+
 		for(Tag tag : tags) {
 			tag = updateTagSubscribe(tag);
 			tagDao.update(tag);
@@ -343,6 +379,163 @@ public class DataLoader {
 	}
 
 	public String getTagUrl(String tagName) {
-		return Constants.TAG_URL + tagName;
+		Uri.Builder builder = Uri.parse(Constants.TAG_URL).buildUpon();
+		builder.appendPath(tagName);
+		return builder.toString();
+	}
+
+	public List<Image> getImageList(Gallery gallery) {
+
+		List<Image> images = gallery.getImages();
+
+		if(images != null && !images.isEmpty()) {
+			Log.i("URL", "has images id: " +
+					gallery.getId() + " size: " +
+					gallery.getImages().size());
+
+			return images;
+		}
+
+		try {
+			JSONArray dataList = new JSONArray();
+
+			int numOfUrlPage = gallery.getSize() / NUM_PER_PAGE
+					+ ((gallery.getSize() % NUM_PER_PAGE == 0) ? 0 : 1);
+
+			for(int i=0; i<numOfUrlPage; i++) {
+				Document mBookDoc = Jsoup.connect(getGalleryPageUrl(gallery, i)).get();
+
+				Element mBookTable = mBookDoc.getElementById("gdt");
+				Elements mBookPage = mBookTable.getElementsByClass("gdtm");
+
+				// Get url of each comic page
+				for(Element page : mBookPage) {
+					JSONObject data = new JSONObject();
+
+					Log.i("URL", "getImageList " + page.select("a").attr("abs:href"));
+
+					Matcher matcher = iUrlPattern.matcher(page.select("a").attr("abs:href"));
+
+					if(matcher.find()) {
+						data.put("token", matcher.group(1));
+						data.put("page", matcher.group(3));
+					}
+					else {
+						Log.e(LOG_MATCHER, "Image url not match");
+
+						return null;
+					}
+
+					dataList.put(data);
+				}
+			}
+
+			List<Image> imageList = new ArrayList<Image>();
+
+			for(int i=0; i<dataList.length(); i++) {
+				Image image = new Image();
+				image.setGalleryId(gallery.getId());
+				image.setToken(dataList.getJSONObject(i).getString("token"));
+				image.setPage(dataList.getJSONObject(i).getInt("page"));
+
+				imageDao.insert(image);
+
+				imageList.add(image);
+			}
+
+			return imageList;
+
+		} catch(IOException e) {
+			e.printStackTrace();
+		} catch(JSONException ej) {
+			ej.printStackTrace();
+		}
+		return null;
+	}
+
+	private String getGalleryPageUrl(Gallery gallery, int page) {
+		Uri.Builder builder = Uri.parse(getGalleryUrl(gallery)).buildUpon();
+		builder.appendQueryParameter("p", Integer.toString(page));
+
+		return builder.toString();
+	}
+
+
+	public Image getImageInfo(long galleryId, int page, boolean retry) {
+		QueryBuilder query = imageDao.queryBuilder();
+		query.where(query.and(
+				ImageDao.Properties.GalleryId.eq(galleryId),
+				ImageDao.Properties.Page.eq(page)
+		));
+
+		Image image = (Image) query.list().get(0);
+
+		if(image.getSrc() != null && !image.getSrc().isEmpty() && !retry) {
+			Log.i("URL", "has image id: " + galleryId + " " + page);
+
+			return image;
+		}
+		else {
+			return getImageInfo(galleryId, image, page);
+		}
+	}
+
+	public Image getImageInfo(Gallery gallery, int page, boolean retry) {
+		return getImageInfo(gallery.getId(), page, retry);
+	}
+
+	public Image getImageInfo(long galleryId, Image image, int page) {
+
+		String url = getImageUrl(image.getToken(), galleryId, page);
+
+		Log.i("URL", "getImageInfo " + url);
+
+		try {
+			JSONObject data = new JSONObject();
+
+			Document pageImg = Jsoup.connect(url).get();
+			Element pageImgSrc = pageImg.getElementById("i3");
+			data.put("src", pageImgSrc.select("img").attr("abs:src"));
+
+			Element pageImgInfo = pageImg.getElementById("i2");
+			Matcher matcher = imageInfo.matcher(pageImgInfo.child(1).text());
+
+			if(matcher.find()) {
+				data.put("filename", matcher.group(1));
+				data.put("width", matcher.group(2));
+				data.put("height", matcher.group(3));
+			}
+			else {
+				Log.e(LOG_MATCHER, "Image info not match");
+
+				return null;
+			}
+
+			image.setSrc(data.getString("src"));
+			image.setFilename(data.getString("filename"));
+			image.setWidth(data.getInt("width"));
+			image.setHeight(data.getInt("height"));
+			imageDao.update(image);
+
+			return image;
+
+		} catch(IOException e) {
+			e.printStackTrace();
+		} catch(JSONException ej) {
+			ej.printStackTrace();
+		}
+		return null;
+	}
+
+	public Image getImageInfo(Image image) {
+		return getImageInfo(image.getGalleryId(), image, image.getPage());
+	}
+
+	private String getImageUrl(String token, long galleryId, int page) {
+		Uri.Builder builder = Uri.parse(Constants.IMAGE_URL).buildUpon();
+		builder.appendPath(token);
+		builder.appendPath(Long.toString(galleryId) + "-" + Integer.toString(page));
+
+		return builder.toString();
 	}
 }
