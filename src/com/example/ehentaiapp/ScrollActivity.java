@@ -118,6 +118,8 @@ public class ScrollActivity extends Activity implements ScrollViewListener {
 		
 		@Override
 		protected void onPostExecute(Void result) {
+			task = null;
+
 			dismissProgressDialog();
 
 			adapter.notifyDataSetChanged();
