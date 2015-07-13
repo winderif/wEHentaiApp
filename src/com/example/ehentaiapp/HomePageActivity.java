@@ -31,6 +31,7 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.wefika.flowlayout.FlowLayout;
 
+import java.util.Date;
 import java.util.List;
 
 import butterknife.Bind;
@@ -102,6 +103,7 @@ public class HomePageActivity extends Activity {
 			showGallery();
 
 			mGallery.setCount(mGallery.getCount() + 1);
+			mGallery.setLastRead(new Date());
 			galleryDao.update(mGallery);
 		}
 	}
@@ -127,13 +129,11 @@ public class HomePageActivity extends Activity {
 
 	@OnClick(R.id.home_but_1)
 	public void onReadClick(View v) {
-		/*
-		Intent mIntent = new Intent();				
+
+		Intent mIntent = new Intent();
 		mIntent.setClass(HomePageActivity.this, ScrollActivity.class);
-		mIntent.putExtra("url_comic", urlOfComic);
-		mIntent.putExtra("num_comic_page", mItem.getNumOfPages());
+		mIntent.putExtra("galleryId", mGallery.getId());
 		startActivity(mIntent);
-		*/
 	}
 
 	public void onFavoriteClick(View v) {
@@ -156,7 +156,7 @@ public class HomePageActivity extends Activity {
 	private class ParseCoverTask extends AsyncTask<Void, Void, Void> {
 		@Override
 		protected Void doInBackground(Void... param) {
-			mGallery = dataLoader.getGallery(gId, gToken);
+			mGallery = dataLoader.getGallery(Constants.GALLERY_URL, gId, gToken);
 
 			return null;
 		}
